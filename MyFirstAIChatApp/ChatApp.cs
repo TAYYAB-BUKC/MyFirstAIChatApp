@@ -1,7 +1,7 @@
 ﻿using GroqApiLibrary;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using MyFirstAIChatApp.Helpers;
 using System.Text.Json.Nodes;
 
 namespace MyFirstAIChatApp
@@ -36,7 +36,8 @@ namespace MyFirstAIChatApp
 			};
 
 			JsonObject? response = await chatClient.CreateChatCompletionAsync(request);
-			Console.WriteLine($"Response: \n{response}");
+			var message = GroqResponseHelper.GetLatestMessage(Convert.ToString(response));
+			Console.WriteLine($"{message.Role}: {message.Content}");
 			applicationLifetime.StopApplication();
 		}
 	}
