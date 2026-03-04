@@ -10,6 +10,7 @@ namespace MyFirstAIChatApp
 	{
 		private readonly IHostApplicationLifetime applicationLifetime;
 		private readonly IConfiguration configuration;
+		private static bool exitRequested = false;
 
 		public ChatApp(IHostApplicationLifetime applicationLifetime, IConfiguration configuration)
 		{
@@ -19,6 +20,14 @@ namespace MyFirstAIChatApp
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
+			Console.CancelKeyPress += (sender, e) =>
+			{
+				Console.WriteLine("\nCTRL+C detected. Exiting gracefully...");
+				e.Cancel = true;
+				applicationLifetime.StopApplication();
+				exitRequested = true;
+			};
+
 			var apiKey = configuration["Chat:AI:ApiKey"];
 			var chatClient = new GroqApiClient(apiKey!);
 
