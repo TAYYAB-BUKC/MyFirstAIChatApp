@@ -47,7 +47,14 @@ namespace MyFirstAIChatApp
 			JsonObject? response = await chatClient.CreateChatCompletionAsync(request);
 			var message = GroqResponseHelper.GetLatestMessage(Convert.ToString(response));
 			Console.WriteLine($"{message.Role}: {message.Content}");
-			applicationLifetime.StopApplication();
+
+			while (!stoppingToken.IsCancellationRequested)
+			{
+				Console.WriteLine("Prompt > ");
+				string? userPrompt = Console.ReadLine();
+				if (userPrompt is null || exitRequested)
+					break;
+			}
 		}
 	}
 }
