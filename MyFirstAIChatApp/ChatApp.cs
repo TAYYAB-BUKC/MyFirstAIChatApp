@@ -1,4 +1,5 @@
 ﻿using GroqApiLibrary;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using MyFirstAIChatApp.Helpers;
@@ -44,16 +45,34 @@ namespace MyFirstAIChatApp
 				}
 			};
 
+			Console.WriteLine("system: You are an AI assistant that tries to answer the user's query.");
 			JsonObject? response = await chatClient.CreateChatCompletionAsync(request);
 			var message = GroqResponseHelper.GetLatestMessage(Convert.ToString(response));
 			Console.WriteLine($"{message.Role}: {message.Content}");
 
 			while (!stoppingToken.IsCancellationRequested)
 			{
-				Console.WriteLine("Prompt > ");
+				Console.WriteLine("Prompt: ");
 				string? userPrompt = Console.ReadLine();
 				if (userPrompt is null || exitRequested)
 					break;
+
+				var userRequest = new JsonObject
+				{
+					["model"] = GroqModels.Llama33_70B,
+					["messages"] = new JsonArray
+					{
+						new JsonObject
+						{
+							["role"] = Convert.ToString(ChatRole.User),
+							["content"] = userPrompt
+						}
+					}
+				};
+
+				JsonObject? userResponse = await chatClient.CreateChatCompletionAsync(userRequest);
+				message = GroqResponseHelper.GetLatestMessage(Convert.ToString(userResponse));
+				Console.WriteLine($"{message.Role}: {message.Content}");
 			}
 		}
 	}
