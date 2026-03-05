@@ -17,7 +17,9 @@ var uri = new Uri(ollamaEndpoint);
 var ollama = new OllamaApiClient(uri);
 host.Services.AddChatClient(ollama);
 
-host.Services.AddHostedService<ChatApp>();
+host.Services.AddHttpClient();
+//host.Services.AddHostedService<ChatApp>();
+host.Services.AddHostedService<WebChatApp>();
 
 var app = host.Build();
 
