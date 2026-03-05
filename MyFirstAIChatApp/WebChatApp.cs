@@ -40,7 +40,7 @@ namespace MyFirstAIChatApp
 
 			var document = new HtmlDocument();
 			document.LoadHtml(data);
-			var paragraphNodes = document.DocumentNode.SelectNodes("//p");
+			var paragraphNodes = document.DocumentNode.SelectNodes(@"/html/body/div[2]/section[1]/div/div/div[1]/div[3]/div/div[1]");
 			var paragraphData = string.Empty;
 			if (paragraphNodes is not null)
 			{
