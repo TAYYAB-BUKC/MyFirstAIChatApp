@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 
 namespace MyFirstAIChatApp
 {
-	public class WebChatApp(IHostApplicationLifetime applicationLifetime, IConfiguration configuration) : BackgroundService
+	public partial class WebChatApp(IHostApplicationLifetime applicationLifetime, IConfiguration configuration, HttpClient httpClient) : BackgroundService
 	{
 		private static bool exitRequested = false;
 		private JsonArray history = [];
