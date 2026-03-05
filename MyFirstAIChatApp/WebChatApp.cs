@@ -30,11 +30,9 @@ namespace MyFirstAIChatApp
 				new JsonObject
 				{
 					["role"] = "system",
-					["content"] = "You are an AI assistant that tries to answer the user's query."
+					["content"] = summarizationPrompt,
 				}
 			};
-
-			Console.WriteLine("system: You are an AI assistant that tries to answer the user's query.");
 
 			var initialRequest = new JsonObject
 			{
@@ -49,8 +47,7 @@ namespace MyFirstAIChatApp
 				["role"] = message.Role,
 				["content"] = message.Content
 			});
-			Console.WriteLine($"{message.Role}: {message.Content}");
-
+	
 			while (!stoppingToken.IsCancellationRequested)
 			{
 				Console.WriteLine("Prompt: ");
