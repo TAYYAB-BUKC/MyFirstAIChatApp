@@ -34,13 +34,13 @@ namespace MyFirstAIChatApp
 			var chatClient = new GroqApiClient(apiKey!);
 
 			history = new JsonArray
-					  {
-						new JsonObject
-						{
-							["role"] = "system",
-							["content"] = "You are an AI assistant that tries to answer the user's query."
-						}
-					  };
+			{
+				new JsonObject
+				{
+					["role"] = "system",
+					["content"] = "You are an AI assistant that tries to answer the user's query."
+				}
+			};
 
 			Console.WriteLine("system: You are an AI assistant that tries to answer the user's query.");
 
@@ -77,14 +77,6 @@ namespace MyFirstAIChatApp
 					["model"] = GroqModels.Llama33_70B,
 					["messages"] = GroqRequestHelper.DeepCloneMessages(history)
 				};
-
-				//var clonedMessages = new JsonArray(history.Select(m => m.DeepClone()).ToArray());
-				//var userRequest = new JsonObject
-				//{
-				//	["model"] = GroqModels.Llama33_70B,
-				//	["messages"] = clonedMessages
-				//};
-
 
 				JsonObject? userResponse = await chatClient.CreateChatCompletionAsync(userRequest);
 				message = GroqResponseHelper.GetLatestMessage(Convert.ToString(userResponse));
