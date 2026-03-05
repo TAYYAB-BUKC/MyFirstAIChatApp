@@ -12,6 +12,7 @@ namespace MyFirstAIChatApp
 		private readonly IHostApplicationLifetime applicationLifetime;
 		private readonly IConfiguration configuration;
 		private static bool exitRequested = false;
+		private JsonArray history = [];
 
 		public ChatApp(IHostApplicationLifetime applicationLifetime, IConfiguration configuration)
 		{
@@ -32,22 +33,30 @@ namespace MyFirstAIChatApp
 			var apiKey = configuration["Chat:AI:ApiKey"];
 			var chatClient = new GroqApiClient(apiKey!);
 
-			var request = new JsonObject
-			{
-				["model"] = GroqModels.Llama33_70B,
-				["messages"] = new JsonArray
-				{
-					new JsonObject
-					{
-						["role"] = "system",
-						["content"] = "You are an AI assistant that tries to answer the user's query."
-					}
-				}
-			};
+			history = new JsonArray
+					  {
+						new JsonObject
+						{
+							["role"] = "system",
+							["content"] = "You are an AI assistant that tries to answer the user's query."
+						}
+					  };
 
 			Console.WriteLine("system: You are an AI assistant that tries to answer the user's query.");
-			JsonObject? response = await chatClient.CreateChatCompletionAsync(request);
+
+			var initialRequest = new JsonObject
+			{
+				["model"] = GroqModels.Llama33_70B,
+				["messages"] = history
+			};
+
+			JsonObject? response = await chatClient.CreateChatCompletionAsync(initialRequest);
 			var message = GroqResponseHelper.GetLatestMessage(Convert.ToString(response));
+			history.Add(new JsonObject
+			{
+				["role"] = message.Role,
+				["content"] = message.Content
+			});
 			Console.WriteLine($"{message.Role}: {message.Content}");
 
 			while (!stoppingToken.IsCancellationRequested)
@@ -57,21 +66,35 @@ namespace MyFirstAIChatApp
 				if (userPrompt is null || exitRequested)
 					break;
 
+				history.Add(new JsonObject
+				{
+					["role"] = Convert.ToString(ChatRole.User),
+					["content"] = userPrompt
+				});
+
 				var userRequest = new JsonObject
 				{
 					["model"] = GroqModels.Llama33_70B,
-					["messages"] = new JsonArray
-					{
-						new JsonObject
-						{
-							["role"] = Convert.ToString(ChatRole.User),
-							["content"] = userPrompt
-						}
-					}
+					["messages"] = GroqRequestHelper.DeepCloneMessages(history)
 				};
+
+				//var clonedMessages = new JsonArray(history.Select(m => m.DeepClone()).ToArray());
+				//var userRequest = new JsonObject
+				//{
+				//	["model"] = GroqModels.Llama33_70B,
+				//	["messages"] = clonedMessages
+				//};
+
 
 				JsonObject? userResponse = await chatClient.CreateChatCompletionAsync(userRequest);
 				message = GroqResponseHelper.GetLatestMessage(Convert.ToString(userResponse));
+
+				history.Add(new JsonObject
+				{
+					["role"] = message.Role,
+					["content"] = message.Content
+				});
+
 				Console.WriteLine($"{message.Role}: {message.Content}");
 			}
 		}
