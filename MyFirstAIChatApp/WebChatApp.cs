@@ -1,4 +1,5 @@
 ﻿using GroqApiLibrary;
+using HtmlAgilityPack;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -34,6 +35,24 @@ namespace MyFirstAIChatApp
 				}
 			};
 
+			string url = "https://dometrain.com/course/from-zero-to-hero-working-with-null-in-csharp/";
+			string data = await httpClient.GetStringAsync(url);
+
+			var document = new HtmlDocument();
+			document.LoadHtml(data);
+			var paragraphNodes = document.DocumentNode.SelectNodes(@"/html/body/div[2]/section[1]/div/div/div[1]/div[3]/div/div[1]");
+			var paragraphData = string.Empty;
+			if (paragraphNodes is not null)
+			{
+				paragraphData = String.Join(" ", paragraphNodes.Select(node => node.InnerText.Trim()));
+			}
+
+			history.Add(new JsonObject
+			{
+				["role"] = ChatRole.User.ToString(),
+				["content"] = paragraphData
+			});
+
 			var initialRequest = new JsonObject
 			{
 				["model"] = GroqModels.Llama33_70B,
@@ -42,12 +61,16 @@ namespace MyFirstAIChatApp
 
 			JsonObject? response = await chatClient.CreateChatCompletionAsync(initialRequest);
 			var message = GroqResponseHelper.GetLatestMessage(Convert.ToString(response));
+
 			history.Add(new JsonObject
 			{
 				["role"] = message.Role,
 				["content"] = message.Content
 			});
-	
+
+			Console.WriteLine("-----------------------------------");
+			Console.WriteLine($"{message.Role}: {message.Content}");
+			Console.WriteLine("-----------------------------------");
 			while (!stoppingToken.IsCancellationRequested)
 			{
 				Console.WriteLine("Prompt: ");
